@@ -1,82 +1,72 @@
 #include "monty.h"
-
 /**
- * free_tkns - exit the allocated memory for tokens.
- */
-void free_tkns(void)
+* execute - prototype function to executes the opcode
+* @stack: parameter for top linked list - stack
+* @xval: parameter for line_xval
+* @file: poiner to monty file
+* @cval: parameter for line cval
+* Return: no return
+*/
+int execute(char *cval, stack_t **stack, unsigned int xval, FILE *file)
 {
-int x;
+instruction_t opst[] = {
+{"push", mont_push}, {"pall", mont_pall}, {"pint", mont_pint},
+{"pop", mont_pop},
+{"swap", mont_swap},
+{"add", mont_add},
+{"nop", mont_nop},
+{"sub", mont_sub},
+{"div", mont_div},
+{"mul", mont_mul},
+{"mod", mont_mod},
+{"pchar", mont_pchar},
+{"pstr", mont_pstr},
+{"rotl", mont_rotl},
+{"rotr", mont_rotr},
+{"queue", mont_queue},
+{"stack", mont_stack},
+{NULL, NULL}
+};
+unsigned int i = 0;
+char *op;
 
-if (choice->tkns == NULL)
-return;
-while (choice->tkns[x])
+op = strtok(cval, " \n\t");
+if (op && op[0] == '#')
+return (0);
+mymont.arg = strtok(NULL, " \n\t");
+while (opst[i].opcode && op)
 {
-free(choice->tkns[x]);
-x++;
+if (strcmp(op, opst[i].opcode) == 0)
+{ opst[i].f(stack, xval);
+return (0);
 }
-free(choice->tkns);
-choice->tkns = NULL;
+i++;
 }
-
-/**
- * exit_conn - prototype that exit connection
- */
-void exit_conn(void)
-{
-if (choice->conn == NULL)
-return;
-
-fclose(choice->conn);
-choice->conn = NULL;
-}
-
-/**
- * free_stack - prototype to free stack list
- *@head: parameter for topmost node
- * Return: nothing.
- */
-void free_stack(stack_t *head)
-{
-if (head == NULL)
-return;
-if (head->next != NULL)
-{
-free_stack(head->next);
-}
-free(head)
-}
-
-
-/**
- * free_head - releases the allocated memory and sets head to NULLL.
- */
-void free_head(void)
-{
-if (choice->head)
-free_stack(choice->head);
-choice->head = NULL;
+if (op && opst[i].opcode == NULL)
+{ fprintf(stderr, "L%d: unknown instruction %s\n", xval, op);
+fclose(file);
+free(cval);
+free_stack(*stack);
+exit(EXIT_FAILURE); }
+return (1);
 }
 
 /**
- * free_choice - free allocated space to pointer
- */
-
-void free_choice(void)
+* free_stack - prototype function that frees a doubly linked list
+* @top: parameter for top of the stack
+*/
+void free_stack(stack_t *top)
 {
-if (choice == NULL)
-return;
+/*Introducing parameter variables*/
+stack_t *x;
 
-if (choice->comm)
+x = top;
+while (top)
 {
-free(choice->comm);
-choice->comm = NULL;
+x = top->next;
+free(top);
+top = x;
 }
-free_head();
+}
 
-if (choice->line)
-{
-free(choice->line);
-choice->line = NULL;
-}
-free(choice);
-}
+

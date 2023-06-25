@@ -1,162 +1,127 @@
 #include "monty.h"
-
+#include <stdio.h>
 /**
- * init_choice - prototype function to start pointer.
- */
-void init_choice(void)
-{
-choice = malloc(sizeof(arg_m));
-if (choice == NULL)
-dprintf(2, "Error: malloc failed\n");
-free_choice();
-exit(EXIT_FAILURE);
-
-choice->comm = malloc(sizeof(instruction_t));
-if (choice->comm == NULL)
-dprintf(2, "Error: malloc failed\n");
-free_choice();
-exit(EXIT_FAILURE);
-
-choice->conn = NULL;
-choice->line = NULL;
-choice->tkns_s = 0;
-choice->line_number = 0;
-}
-
-/**
-* read_tkns - prototype that read line for tkns from file
+* main - prototype function for monty code interpreter
+* @argc: parameter for number of arguments
+* @argv: parameter for monty file location
+* Return: 0 on success
 */
-void read_tkns(void)
+mymont_t mymont = {NULL, NULL, NULL, 0};
+int main(int argc, char *argv[])
 {
-/*introducing parameter variable*/
-char *tkn = NULL, *cp_line = NULL, i = " \n";
-int x = 0;
+/*Introducing parameter variables*/
+FILE *file;
+stack_t *stack = NULL;
+size_t size = 0;
+ssize_t rval = 1;
+unsigned int xval = 0;
+char *cval;
 
-cp_line = malloc(sizeof(char) * (strlen(choice->line) + 1));
-strcpy(cp_line, choice->line);
-choice->tkns_s = 0;
-tkn = strtok(cp_line, i);
-while (tkn)
+if (argc != 2)
 {
-choice->tkns_s += 1;
-tkn = strtok(NULL, i);
-}
-
-choice->tkns = malloc(sizeof(char *) * (choice->tkns_s + 1));
-strcpy(cp_line, choice->line);
-tkn = strtok(cp_line, i);
-while (tkn)
-{
-choice->tkns[x] = malloc(sizeof(char) (strlen(tkn) + 1));
-
-if (choice->tkns[x] == NULL)
-dprintf(2, "Error: malloc failed\n");
-free_choice();
-exit(EXIT_FAILURE);
-strcpy(choice->tkns[x], tkn);
-tkn = strtok(NULL, i);
-x++;
-}
-choice->tkns[x] == NULL;
-free(cp_line);
-}
-
-
-
-/**
-* start_conn - function prototype that gets the conn for reading
-* @file: parameter for file to open
-*/
-void start_conn(char *file)
-{
-int fd;
-
-fd = open(file, O_RDONLY);
-
-if (fd == 1)
-dprintf(stderr, "Error: Can't open file %s\n", file);
-free_choice();
-exit(EXIT FAILURE);
-
-choice->conn = fdopen(fd, "r");
-
-if (choice->conn == NULL)
-{
-close(fd);
-dprintf(stderr, "Error: Can't open file %s\n", file);
-free_choice();
-exit(EXIT FAILURE);
-}
-}
-
-
-
-/**
-* get_opcode - prototype for getting instruction from token
-*/
-void get_opcode(void)
-{
-int x = 0;
-instruction_t comm[] = {
-{"push", &push}, {"pop", &pop},
-{"disp_top", &disp_top}, {"swap", &swap},
-{"nop", &nop}, {"add", &add},
-{"pall", &pall}, {"sub", &sub},
-{"div", &_div}, {"mul", &mul},
-("rotl", &rotl}, {"rotr", &rotr},
-{"stack", &stack}, ("queue", &queue},
-{"pstc", &pstr}, {"pchar", &pchar},
-{"mod", &mod},
-{NULL, NULL}
-};
-
-if (argument->tkns_s == 0)
-return;
-
-for (; comm[x].opcode != NULL; x++)
-{
-if (strcmp(comm[x].opcode, choice->tkns[0]) == 0)
-{
-choice->comm->opcode = comm[x].opcode;
-choice->comm->f comm[x].f;
-return;
-}
-}
-dprintf(2, "L%d: unknown instruction %s\n",
-choice->line_number, choice->tkns[0]);
-free_bcs();
+fprintf(stderr, "USAGE: monty file\n");
 exit(EXIT_FAILURE);
 }
-
-/**
-* main - monty main function.
-* @argc: argument count
-* @argv: parameter for argument values
-* Return: Always 0 (Success).
-*/
-int main(int argc, char **argv)
+file = fopen(argv[1], "r");
+mymont.file = file;
+if (!file)
 {
-
-/*introducing parameter*/
-Size_t i = 0;
-arg_m *choice = NULL;
-
-validate_choice(argc);
-init_choice();
-start_conn(argv[1]);
-
-/*accessing the argument and opcode*/
-while (getline(&choice->line, &i, choice->conn) != 1)
-{
-choice->line_number += 1;
-read_tkns();
-get_opcode();
-run_opcode();
-free_tkns();
+fprintf(stderr, "Error: Can't open file %s\n", argv[1]);
+exit(EXIT_FAILURE);
 }
-
-exit_conn();
-free_choice();
-
+while (rval > 0)
+{
+cval = NULL;
+rval = getline(&cval, &size, file);
+mymont.cval = cval;
+xval++;
+if (rval > 0)
+{
+execute(cval, &stack, xval, file);
+}
+free(cval);
+}
+free_stack(stack);
+fclose(file);
 return (0);
+}
+
+/**
+ * mont_pchar - prints the char at the top of the stack,
+ * followed by a new line
+ * @top: parameter for stack top
+ * @xval: parameter for line_number
+ * Return: no return
+*/
+void mont_pchar(stack_t **top, unsigned int xval)
+{
+/*Introducing parameter variables*/
+stack_t *tmp;
+
+tmp = *top;
+if (!tmp)
+{
+fprintf(stderr, "L%d: can't pchar, stack empty\n", xval);
+fclose(mymont.file);
+free(mymont.cval);
+free_stack(*top);
+exit(EXIT_FAILURE);
+}
+if (tmp->n > 127 || tmp->n < 0)
+{
+fprintf(stderr, "L%d: can't pchar, value out of range\n", xval);
+fclose(mymont.file);
+free(mymont.cval);
+free_stack(*top);
+exit(EXIT_FAILURE);
+}
+printf("%c\n", tmp->n);
+}
+
+/**
+ * mont_pall - prototype function for printing the stack
+ * @top: parameter for stack top
+ * @xval: parameter for no used
+ * Return: no return
+*/
+void mont_pall(stack_t **top, unsigned int xval)
+{
+/*Introducing parameter variables*/
+stack_t *tmp;
+(void)xval;
+
+tmp = *top;
+/*Introducing conditional statement*/
+if (tmp == NULL)
+return;
+while (tmp)
+{
+printf("%d\n", tmp->n);
+tmp = tmp->next;
+}
+}
+
+/**
+*mont_nop- prototype function for dissolve.
+*@top: parameter for stack top
+*@xval: parameter for line_number
+*Return: no return
+ */
+void mont_nop(stack_t **top, unsigned int xval)
+{
+(void) xval;
+(void) top;
+}
+
+/**
+ * mont_stack - prototype function
+ * @top: parameter for stack top
+ * @xval: parameter for line_number
+ * Return: no return
+*/
+void mont_stack(stack_t **top, unsigned int xval)
+{
+(void)top;
+(void)xval;
+mymont.lifi = 0;
 }

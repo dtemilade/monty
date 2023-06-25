@@ -1,112 +1,134 @@
 #include "monty.h"
-
 /**
- * check_num - prototype that checks for integer from inputs
- * @ptr_s: parameter for string
- * Return: 1 for valid string, 0 otherwise.
- */
-void check_num(char *ptr_s)
+ * mont_pop - prototype function in stack
+ * @top: parameter for stack top
+ * @xval: parameter for line_number
+ * Return: no return
+*/
+void mont_pop(stack_t **top, unsigned int xval)
 {
-/*introducing variable parameter*/
-int x = 0;
+/*Introducing parameter variables*/
+stack_t *tmp;
 
-while (ptr_s[x])
+if (*top == NULL)
 {
-if (x == 0 && ptr_s[x] == '-' && ptr_s[x + 1])
-{
-Continue;
-}
-if (ptr_s[x] < ‘0’ || ptr_s[i] > ‘9’)
-return (0);
-x++;
-}
-
-return (1);
-}
-
-/**
- * push - prototype that move number into stack
- * @stack: parameter pointer for stack
- * @line_number: parameter for position
- */
-void push(stack_t **stack, unsigned int line_number)
-{
-if (choice->tkns_s <= 1 || !(check_num(choice->tkns[1])))
-{
-free_choice();
-dprintf(2, "L%d: usage: push integer\n", line_number);
-exit(EXIT FAILURE);
-}
-
-*stack = malloc(sizeof(stack_t));
-if (stack == NULL)
-dprintf(2, "Error: malloc failed\n");
-free_choice();
+fprintf(stderr, "L%d: can't pop an empty stack\n", xval);
+fclose(mymont.file);
+free(mymont.cval);
+free_stack(*top);
 exit(EXIT_FAILURE);
-
-(*stack)->next = (*stack)->prev = NULL;
-
-(*stack)->n = (int) atoi(choice->tkns[1]);
-
-if (choice->head != NULL)
-{
-(*stack)->next = choice->head;
-choice->head->prev stack;
 }
-
-choice->head = *stack;
-choice->stack_length += 1;
+tmp = *top;
+*top = tmp->next;
+free(tmp);
 }
 
 /**
- * pall - prototype that display stack element
- * @stack: parameter pointer for stack
- * @line_number: parameter for position
- */
-void pall(stack_t **stack, unsigned int line_number)
+ * mont_q - prototype function to add node to the tail stack
+ * @n: parameter for new_value
+ * @top: parameter for top of the stack
+ * Return: no return
+*/
+void mont_q(stack_t **top, int n)
 {
-	stack_t *tmp;
+/*Introducing parameter variables*/
+stack_t *nodval, *x;
 
-if (choice->head == NULL)
-return;
-
-(void) line_number;
-(void) stack;
-
-tmp = choice->head;
-while (tmp = NULL)
-
-printf("%d\n", tmp->n);
-tmp = tmp->next;
+x = *top;
+nodval = malloc(sizeof(stack_t));
+if (nodval == NULL)
+{
+printf("Error\n");
 }
-
+nodval->n = n;
+nodval->next = NULL;
+if (x)
+{
+while (x->next)
+x = x->next;
+}
+if (!x)
+{
+*top = nodval;
+nodval->prev = NULL;
+}
+else
+{
+x->next = nodval;
+nodval->prev = x;
+}
+}
 
 /**
- * disp_top - prototype that display  element on top of stack
- * @stack: parameter pointer for stack
- * @line_number: parameter for position
- */
-void disp_top(stack_t **stack, unsigned int line_number)
+ * mont_push - prototype function to add node to the stack
+ * @top: parameter for stack top
+ * @xval: parameter for line_number
+ * Return: no return
+*/
+void mont_push(stack_t **top, unsigned int xval)
 {
-(void) stack;
-if (choice->head == NULL)
-{
-dprintf(2, "L%d: can't display, stack empty\n", line_number);
-exit_conn();
-free_tkns();
-free_choice();
-exit(EXIT FAILURE);
-}
-printf("%d\n", choice->head->n);
-}
+/*Introducing parameter variables*/
+int n, j = 0, flag = 0;
 
+if (mymont.arg)
+{
+if (mymont.arg[0] == '-')
+j++;
+for (; mymont.arg[j] != '\0'; j++)
+{
+if (mymont.arg[j] > 57 || mymont.arg[j] < 48)
+flag = 1;
+}
+if (flag == 1)
+{ fprintf(stderr, "L%d: usagE: push integer\n", xval);
+fclose(mymont.file);
+free(mymont.cval);
+free_stack(*top);
+exit(EXIT_FAILURE);
+}
+}
+else
+{ fprintf(stderr, "L%d: usagE: push integer\n", xval);
+fclose(mymont.file);
+free(mymont.cval);
+free_stack(*top);
+exit(EXIT_FAILURE);
+}
+n = atoi(mymont.arg);
+if (mymont.lifi == 0)
+addnode(top, n);
+else
+mont_q(top, n);
+}
 
 /**
- * free_bcs - prototype to release all allocated memory.
- */
-void free_bcs(void)
+ * mont_queue - prototype function to prints the stack
+ * @top: parameter for stack top
+ * @xval: parameter for line_number
+ * Return: no return
+*/
+void mont_queue(stack_t **top, unsigned int xval)
 {
-exit_conn();
-free_tkns();
-free_choice();
+(void)top;
+(void)xval;
+mymont.lifi = 1;
+}
+
+/**
+ * mont_pint - prototype function for printing the stack top
+ * @top: parameter for stack top
+ * @xval: parameter for line_number
+ * Return: no return
+*/
+void mont_pint(stack_t **top, unsigned int xval)
+{
+if (*top == NULL)
+{
+fprintf(stderr, "L%u: can't pint, stack empty\n", xval);
+fclose(mymont.file);
+free(mymont.cval);
+free_stack(*top);
+exit(EXIT_FAILURE);
+}
+printf("%d\n", (*top)->n);
 }
